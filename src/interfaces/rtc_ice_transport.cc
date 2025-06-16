@@ -8,12 +8,12 @@
 #include "src/interfaces/rtc_ice_transport.hh"
 
 #include "src/converters/arguments.hh"
+#include "src/converters/ice_parameters.hh"
 #include "src/enums/webrtc/ice_connection_state.hh"
 #include "src/enums/webrtc/ice_gathering_state.hh"
 #include "src/enums/webrtc/ice_role.hh"
 #include "src/enums/webrtc/ice_transport_state.hh"
 #include "src/interfaces/rtc_peer_connection/peer_connection_factory.hh"
-#include "src/converters/ice_parameters.hh"
 
 namespace node_webrtc {
 
@@ -213,6 +213,21 @@ RTCIceTransport::GetRemoteParameters(const Napi::CallbackInfo &info) {
   return info.Env().Undefined();
 }
 
+Napi::Value RTCIceTransport::Start(const Napi::CallbackInfo &info) {
+  Napi::Env env = info.Env();
+  if (_state == webrtc::IceTransportState::kClosed) {
+    Napi::Error::New(env, "InvalidStateError").ThrowAsJavaScriptException();
+    return env.Undefined();
+  }
+  if (info.Length() < 1 || !info[0].IsObject()) {
+    Napi::TypeError::New(env, "start() expects RTCIceParameters object")
+        .ThrowAsJavaScriptException();
+    return env.Undefined();
+  }
+
+  return env.Undefined();
+}
+
 void RTCIceTransport::Init(Napi::Env env, Napi::Object exports) {
   auto func = DefineClass(
       env, "RTCIceTransport",
@@ -230,7 +245,9 @@ void RTCIceTransport::Init(Napi::Env env, Napi::Object exports) {
        InstanceMethod("getLocalParameters",
                       &RTCIceTransport::GetLocalParameters),
        InstanceMethod("getRemoteParameters",
-                      &RTCIceTransport::GetRemoteParameters)});
+                      &RTCIceTransport::GetRemoteParameters),
+       InstanceMethod("start", &RTCIceTransport::Start),
+       InstanceMethod("gather", &RTCIceTransport::Gather)});
 
   constructor() = Napi::Persistent(func);
   constructor().SuppressDestruct();

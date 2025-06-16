@@ -14,6 +14,7 @@
 #include <webrtc/api/scoped_refptr.h>
 #include <webrtc/p2p/base/ice_transport_internal.h>
 #include <webrtc/rtc_base/third_party/sigslot/sigslot.h>
+#include <webrtc/p2p/base/p2p_constants.h>
 
 #include "src/enums/node_webrtc/rtc_ice_component.hh"
 #include "src/node/async_object_wrap_with_loop.hh"
@@ -74,6 +75,11 @@ private:
   Napi::Value GetSelectedCandidatePair(const Napi::CallbackInfo &);
   Napi::Value GetLocalParameters(const Napi::CallbackInfo &);
   Napi::Value GetRemoteParameters(const Napi::CallbackInfo &);
+  Napi::Value Start(const Napi::CallbackInfo&);
+  Napi::Value Gather(const Napi::CallbackInfo&);
+
+  cricket::IceParameters _remote_parameters{};
+  bool                   _remote_is_lite = false;
 
   RTCIceComponent _component = RTCIceComponent::kRtp;
   RefPtr<PeerConnectionFactory> _factory;
